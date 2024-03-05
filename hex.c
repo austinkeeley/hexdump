@@ -35,10 +35,10 @@ int dump(void *mem, unsigned int len) {
         }
         if (total_printed % 16 == 0) {
 
-            int j = i - 16;
+            int j = i - 15;
 
             printf("|");
-            while (j != i) {
+            while (j != i+1) {
                 if (m[j] >= 32 && m[j] <= 126) {
                     printf("%c", m[j] & 0xff);
                 } else {
