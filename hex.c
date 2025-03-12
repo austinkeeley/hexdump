@@ -2,16 +2,20 @@
 #include "hex.h"
 
 /**
- * Hexdump like function
- *   mem - Memory to dump
- *   len - Number of bytes to dump
+ * Dumps to a file output using a starting label
+ * Args:
+ *   f - File output stream to write to, e.g. stdout
+ *   mem - Memory buffer to write
+ *   len - Size of the buffer
+ *   start - Starting label
+ *
+ *  Returns the number of bytes written
  */
-int dump(void *mem, unsigned int len) {
-
+size_t fdump(FILE *f, void *mem, size_t len, size_t start) {
     unsigned char *m = mem;
 
     // Total bytes printed
-    unsigned int total_printed = 0;
+    size_t total_printed = 0;
 
     // Bytes printed in this line
     unsigned int num_printed = 0;
@@ -23,32 +27,32 @@ int dump(void *mem, unsigned int len) {
     while (1) {
 
         if (total_printed % 16 == 0) {
-            printf("%08x: ", i);
+            printf("%08lx: ", i + start);
         }
 
-        printf("%02x", m[i]);
+        fprintf(f, "%02x", m[i]);
         total_printed += 1;
         num_printed += 1;
 
         if (total_printed % 4 == 0) {
-            printf(" ");
+            fprintf(f, " ");
             words_printed += 1;
         }
         if (total_printed % 16 == 0) {
 
             int j = i - 15;
 
-            printf("|");
+            fprintf(f, "|");
             while (j != i+1) {
                 if (m[j] >= 32 && m[j] <= 126) {
-                    printf("%c", m[j] & 0xff);
+                    fprintf(f, "%c", m[j] & 0xff);
                 } else {
-                    printf(".");
+                    fprintf(f, ".");
                 }
                 j++;
             }
 
-            printf("|\n");
+            fprintf(f, "|\n");
             words_printed = 0;
             num_printed = 0;
         }
@@ -63,32 +67,32 @@ int dump(void *mem, unsigned int len) {
 
                 int k = 0;
                 while (k < (16 - num_printed)) {
-                    printf("  ");
+                    fprintf(f, "  ");
                     k++;
                 }
 
                 k = 0;
                 while (k < (4 - words_printed)) {
-                    printf(" ");
+                    fprintf(f, " ");
                     k++;
                 }
 
-                printf("|");
+                fprintf(f, "|");
                 while (j != i) {
                     if (m[j] >= 32 && m[j] <= 126) {
-                        printf("%c", m[j] & 0xff);
+                        fprintf(f, "%c", m[j] & 0xff);
                     } else {
-                        printf(".");
+                        fprintf(f, ".");
                     }
                     j++;
                 }
 
                 k = 0;
                 while (k < (16 - num_printed)) {
-                    printf(" ");
+                    fprintf(f, " ");
                     k++;
                 }
-                printf("|\n");
+                fprintf(f, "|\n");
                 words_printed = 0;
             }
 
@@ -96,6 +100,16 @@ int dump(void *mem, unsigned int len) {
         }
     }
     return i;
+}
+
+/**
+ * Hexdump like function
+ * Args:
+ *   mem - Memory to dump
+ *   len - Number of bytes to dump
+ */
+size_t dump(void *mem, size_t len) {
+    return fdump(stdout, mem, len, 0x0);
 }
 
 #ifdef HEX_MAIN
@@ -111,6 +125,7 @@ int main(int argc, char *argv[]) {
         m[i] = i;
     }
     dump(m, 129);
+    free(m);
 }
 
 #endif
