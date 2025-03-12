@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "hex.h"
 
 /**
  * Hexdump like function
